@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signal — A weekly cut through the AI noise</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:        #0F1720;
+    --ink-2:      #16222D;
+    --ink-3:      #1D2C38;
+    --paper:      #EDEAE0;
+    --paper-dim:  #93A0AA;
+    --brass:      #C6963E;
+    --brass-dim:  #8C6E33;
+    --teal:       #6C9686;
+    --line:       rgba(237,234,224,0.12);
+    --line-strong:rgba(237,234,224,0.22);
+    --radius:     3px;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+
+  html{ scroll-behavior:smooth; }
+
+  body{
+    background:var(--ink);
+    color:var(--paper);
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:16px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .mono{ font-family:'IBM Plex Mono', monospace; }
+
+  a{ color:inherit; text-decoration:none; }
+
+  ::selection{ background:var(--brass); color:var(--ink); }
+
+  :focus-visible{
+    outline:2px solid var(--brass);
+    outline-offset:3px;
+  }
+
+  .wrap{
+    max-width:1040px;
+    margin:0 auto;
+    padding:0 28px;
+  }
+
+  /* ---------- eyebrow / manifest labels ---------- */
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    color:var(--brass);
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .eyebrow::before{
+    content:'';
+    width:16px;
+    height:1px;
+    background:var(--brass);
+    display:inline-block;
+  }
+
+  /* ---------- header ---------- */
+  header{
+    position:sticky;
+    top:0;
+    z-index:50;
+    background:rgba(15,23,32,0.88);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:20px 0;
+  }
+  .wordmark{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:19px;
+    letter-spacing:0.02em;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .wordmark span{ color:var(--brass); }
+  .dot{
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:var(--brass);
+    flex-shrink:0;
+    animation:pulse 2.6s ease-out infinite;
+  }
+  @keyframes pulse{
+    0%{ box-shadow:0 0 0 0 rgba(198,150,62,0.5); }
+    70%{ box-shadow:0 0 0 9px rgba(198,150,62,0); }
+    100%{ box-shadow:0 0 0 0 rgba(198,150,62,0); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .dot{ animation:none; }
+  }
+  .nav-cta{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    border:1px solid var(--line-strong);
+    padding:9px 16px;
+    border-radius:var(--radius);
+    transition:border-color .2s ease, background .2s ease;
+    white-space:nowrap;
+  }
+  .nav-cta:hover{ border-color:var(--brass); background:rgba(198,150,62,0.08); }
+
+  /* ---------- hero ---------- */
+  .hero{
+    padding:96px 0 76px;
+    border-bottom:1px solid var(--line);
+  }
+  .hero .eyebrow{ margin-bottom:22px; }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:clamp(34px, 5.4vw, 58px);
+    line-height:1.08;
+    letter-spacing:-0.01em;
+    max-width:820px;
+  }
+  h1 em{
+    font-style:italic;
+    font-weight:500;
+    color:var(--brass);
+  }
+  .hero-sub{
+    margin-top:22px;
+    max-width:540px;
+    font-size:17px;
+    color:var(--paper-dim);
+    line-height:1.7;
+  }
+
+  .hero-actions{
+    margin-top:38px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:14px;
+    align-items:center;
+  }
+  .form-row{
+    display:flex;
+    gap:0;
+    border:1px solid var(--line-strong);
+    border-radius:var(--radius);
+    overflow:hidden;
+    max-width:380px;
+    width:100%;
+  }
+  .form-row input{
+    flex:1;
+    background:transparent;
+    border:0;
+    padding:13px 16px;
+    color:var(--paper);
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:14px;
+  }
+  .form-row input::placeholder{ color:var(--paper-dim); }
+  .form-row input:focus{ outline:none; background:rgba(237,234,224,0.03); }
+  .btn{
+    background:var(--brass);
+    color:var(--ink);
+    border:0;
+    padding:13px 20px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    font-weight:500;
+    cursor:pointer;
+    transition:background .2s ease;
+    white-space:nowrap;
+  }
+  .btn:hover{ background:#D9A94C; }
+  .hero-note{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    color:var(--paper-dim);
+    letter-spacing:0.02em;
+  }
+
+  /* ---------- section shell ---------- */
+  section{ padding:64px 0; border-bottom:1px solid var(--line); }
+  section:last-of-type{ border-bottom:0; }
+  .section-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:34px;
+    gap:20px;
+    flex-wrap:wrap;
+  }
+  h2{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:26px;
+  }
+  .section-desc{
+    font-size:14px;
+    color:var(--paper-dim);
+    max-width:320px;
+    text-align:right;
+  }
+
+  /* ---------- manifest strip (signature element) ---------- */
+  .manifest{
+    border:1px solid var(--line-strong);
+    border-radius:var(--radius);
+    background:linear-gradient(180deg, var(--ink-2), var(--ink-3));
+    padding:30px;
+    position:relative;
+  }
+  .manifest-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:20px;
+    flex-wrap:wrap;
+  }
+  .manifest-id{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--brass);
+    letter-spacing:0.08em;
+  }
+  .manifest-tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.08em;
+    padding:4px 10px;
+    border-radius:2px;
+    text-transform:uppercase;
+  }
+  .tag-free{ background:rgba(108,150,134,0.16); color:var(--teal); border:1px solid rgba(108,150,134,0.35); }
+  .tag-paid{ background:rgba(198,150,62,0.14); color:var(--brass); border:1px solid rgba(198,150,62,0.35); }
+
+  .manifest h3{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:26px;
+    margin-top:16px;
+    max-width:560px;
+    line-height:1.25;
+  }
+  .manifest p{
+    margin-top:12px;
+    color:var(--paper-dim);
+    font-size:15px;
+    max-width:520px;
+  }
+  .manifest-foot{
+    margin-top:22px;
+    display:flex;
+    align-items:center;
+    gap:18px;
+    flex-wrap:wrap;
+  }
+  .manifest-link{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    color:var(--brass);
+    border-bottom:1px solid var(--brass-dim);
+    padding-bottom:2px;
+    transition:opacity .2s ease;
+  }
+  .manifest-link:hover{ opacity:0.75; }
+  .manifest-date{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    color:var(--paper-dim);
+  }
+
+  /* ---------- archive rows ---------- */
+  .ledger{ border-top:1px solid var(--line); }
+  .ledger-row{
+    display:grid;
+    grid-template-columns:64px 1fr auto 90px;
+    align-items:center;
+    gap:20px;
+    padding:20px 0;
+    border-bottom:1px solid var(--line);
+    transition:background .2s ease;
+  }
+  .ledger-row:hover{ background:rgba(237,234,224,0.02); }
+  .ledger-num{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--paper-dim);
+  }
+  .ledger-main .lt{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    font-size:17px;
+    margin-bottom:3px;
+  }
+  .ledger-main .ld{
+    font-size:13.5px;
+    color:var(--paper-dim);
+    max-width:480px;
+  }
+  .ledger-tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    padding:4px 9px;
+    border-radius:2px;
+    white-space:nowrap;
+    justify-self:start;
+  }
+  .ledger-cta{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    color:var(--paper-dim);
+    justify-self:end;
+    transition:color .2s ease;
+  }
+  .ledger-row:hover .ledger-cta{ color:var(--brass); }
+
+  @media (max-width:640px){
+    .ledger-row{
+      grid-template-columns:40px 1fr;
+      row-gap:8px;
+    }
+    .ledger-tag, .ledger-cta{ grid-column:2; justify-self:start; }
+  }
+
+  /* ---------- locked archive teaser ---------- */
+  .locked{
+    display:grid;
+    grid-template-columns:auto 1fr auto;
+    align-items:center;
+    gap:22px;
+    border:1px solid var(--line-strong);
+    border-radius:var(--radius);
+    padding:24px 26px;
+    background:var(--ink-2);
+  }
+  .locked-icon{
+    width:40px;
+    height:40px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:1px solid var(--line-strong);
+    border-radius:50%;
+    font-size:15px;
+    color:var(--brass);
+    flex-shrink:0;
+  }
+  .locked .lt{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    font-size:17px;
+    margin-bottom:4px;
+  }
+  .locked .ld{
+    font-size:13.5px;
+    color:var(--paper-dim);
+    max-width:420px;
+  }
+  .locked-btn{ white-space:nowrap; }
+
+  @media (max-width:640px){
+    .locked{ grid-template-columns:1fr; text-align:left; }
+    .locked-icon{ display:none; }
+  }
+
+  /* ---------- Q&A ---------- */
+  .faq-item{
+    border-bottom:1px solid var(--line);
+  }
+  .faq-item:first-child{ border-top:1px solid var(--line); }
+  .faq-item summary{
+    list-style:none;
+    cursor:pointer;
+    padding:20px 0;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:20px;
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    font-size:17px;
+  }
+  .faq-item summary::-webkit-details-marker{ display:none; }
+  .faq-item summary::after{
+    content:'+';
+    font-family:'IBM Plex Mono', monospace;
+    font-size:18px;
+    color:var(--brass);
+    flex-shrink:0;
+    transition:transform .2s ease;
+  }
+  .faq-item[open] summary::after{ content:'\2212'; }
+  .faq-item .faq-a{
+    padding:0 0 22px;
+    max-width:600px;
+    font-size:14.5px;
+    color:var(--paper-dim);
+  }
+
+  /* ---------- about / dispatch note ---------- */
+  .about{
+    display:grid;
+    grid-template-columns:200px 1fr;
+    gap:40px;
+  }
+  .about p{
+    font-size:15.5px;
+    color:var(--paper-dim);
+    max-width:560px;
+  }
+  .about p + p{ margin-top:14px; }
+  .about strong{ color:var(--paper); font-weight:500; }
+
+  @media (max-width:640px){
+    .about{ grid-template-columns:1fr; gap:16px; }
+  }
+
+  /* ---------- proof note (honest empty-state, no fake testimonials) ---------- */
+  .proof{
+    border:1px dashed var(--line-strong);
+    border-radius:var(--radius);
+    padding:24px 26px;
+    font-size:14px;
+    color:var(--paper-dim);
+  }
+  .proof .mono{ color:var(--brass); font-size:11px; letter-spacing:0.08em; display:block; margin-bottom:8px; }
+
+  /* ---------- footer ---------- */
+  footer{ padding:54px 0 70px; }
+  .foot-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    flex-wrap:wrap;
+    gap:30px;
+  }
+  footer .wordmark{ font-size:16px; margin-bottom:8px; }
+  footer .foot-tag{ font-size:13px; color:var(--paper-dim); max-width:280px; }
+  .foot-links{
+    display:flex;
+    gap:22px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--paper-dim);
+  }
+  .foot-links a:hover{ color:var(--brass); }
+
+  /* ---------- reveal-on-scroll (respects reduced motion) ---------- */
+  .reveal{ opacity:0; transform:translateY(14px); transition:opacity .6s ease, transform .6s ease; }
+  .reveal.in{ opacity:1; transform:translateY(0); }
+  @media (prefers-reduced-motion: reduce){
+    .reveal{ opacity:1; transform:none; transition:none; }
+    html{ scroll-behavior:auto; }
+  }
+
+  /* ---------- language switcher ---------- */
+  .nav-right{ display:flex; align-items:center; gap:16px; }
+  .lang-switch{
+    position:relative;
+  }
+  .lang-btn{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.05em;
+    color:var(--paper-dim);
+    background:transparent;
+    border:1px solid var(--line-strong);
+    border-radius:var(--radius);
+    padding:8px 12px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:7px;
+    transition:border-color .2s ease, color .2s ease;
+  }
+  .lang-btn:hover{ border-color:var(--brass); color:var(--paper); }
+  .lang-btn::after{ content:'\25BE'; font-size:9px; color:var(--brass); }
+  .lang-menu{
+    position:absolute;
+    top:calc(100% + 8px);
+    right:0;
+    background:var(--ink-2);
+    border:1px solid var(--line-strong);
+    border-radius:var(--radius);
+    min-width:150px;
+    padding:6px;
+    display:none;
+    flex-direction:column;
+    z-index:60;
+    box-shadow:0 12px 28px rgba(0,0,0,0.35);
+  }
+  .lang-menu.open{ display:flex; }
+  .lang-opt{
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:13.5px;
+    color:var(--paper);
+    background:transparent;
+    border:0;
+    text-align:left;
+    padding:9px 10px;
+    border-radius:2px;
+    cursor:pointer;
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .lang-opt:hover{ background:rgba(198,150,62,0.1); }
+  .lang-opt[aria-current="true"]{ color:var(--brass); }
+  .lang-opt .code{ font-family:'IBM Plex Mono', monospace; font-size:10.5px; color:var(--paper-dim); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <div class="wordmark"><span class="dot" aria-hidden="true"></span>SIGNAL</div>
+    <div class="nav-right">
+      <a class="nav-cta" href="#signup" data-i18n="nav_cta">Get this week's drop</a>
+      <div class="lang-switch">
+        <button class="lang-btn" id="langBtn" aria-haspopup="true" aria-expanded="false">
+          <span id="langBtnLabel">EN</span>
+        </button>
+        <div class="lang-menu" id="langMenu" role="menu">
+          <button class="lang-opt" data-lang="en" role="menuitem">English <span class="code">EN</span></button>
+          <button class="lang-opt" data-lang="es" role="menuitem">Español <span class="code">ES</span></button>
+          <button class="lang-opt" data-lang="pt" role="menuitem">Português <span class="code">PT</span></button>
+          <button class="lang-opt" data-lang="fr" role="menuitem">Français <span class="code">FR</span></button>
+          <button class="lang-opt" data-lang="zh" role="menuitem">中文 <span class="code">ZH</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="eyebrow" data-i18n="eyebrow">WEEKLY TRANSMISSION</div>
+    <h1><span data-i18n="h1_pre">AI is moving faster than anyone can track.</span> <em data-i18n="h1_em">This is your signal through the noise.</em></h1>
+    <p class="hero-sub" data-i18n="hero_sub">Every week, one real, useful thing — a tool, a template, a plain-English explainer — so you're never more than seven days behind whatever's actually changing.</p>
+
+    <div class="hero-actions">
+      <form class="form-row" id="signup" onsubmit="return false;">
+        <input type="email" id="emailInput" data-i18n-placeholder="email_ph" placeholder="you@email.com" aria-label="Email address" required>
+        <button class="btn" type="submit" data-i18n="join_btn">Join the signal</button>
+      </form>
+    </div>
+    <p class="hero-note" style="margin-top:14px;" data-i18n="hero_note">No spam. One transmission a week. Unsubscribe anytime.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <h2 data-i18n="s1_title">This week's signal</h2>
+      <div class="section-desc" data-i18n="s1_desc">What's cutting through the noise right now.</div>
+    </div>
+
+    <div class="manifest reveal">
+      <div class="manifest-top">
+        <div class="manifest-id">TX 001 &mdash; LIVE</div>
+        <div class="manifest-tag tag-free" data-i18n="tag_free">Free</div>
+      </div>
+      <h3 data-i18n="drop_title">Status Board: Is Your Job Still Boarding?</h3>
+      <p data-i18n="drop_desc">Type your job title and get an honest, task-by-task breakdown of what AI can already do, what it can't yet, and what to do about it — no signup, about 10 seconds, in 10 languages.</p>
+      <div class="manifest-foot">
+        <a class="manifest-link" href="status-board.html" data-i18n="drop_link">Get this drop &rarr;</a>
+        <span class="manifest-date" data-i18n="drop_date">Live this week</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <h2 data-i18n="s2_title">Past signals</h2>
+      <div class="section-desc" data-i18n="s2_desc">Each signal broadcasts for one week, then it moves to the archive.</div>
+    </div>
+
+    <div class="locked reveal">
+      <div class="locked-icon" aria-hidden="true">&#128274;</div>
+      <div>
+        <div class="lt" data-i18n="locked_title">6 past signals are archived</div>
+        <div class="ld" data-i18n="locked_desc">Members get every past signal, searchable, forever. Public visitors only catch what's live this week.</div>
+      </div>
+      <a class="btn locked-btn" href="#members" data-i18n="locked_btn">Sign in to view</a>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <h2 data-i18n="qa_title">Q&amp;A</h2>
+      <div class="section-desc" data-i18n="qa_desc">The questions that come up most.</div>
+    </div>
+
+    <div>
+      <details class="faq-item">
+        <summary data-i18n="faq_q1">Why does the homepage only show one signal?</summary>
+        <div class="faq-a" data-i18n="faq_a1">Every week stays public for one week so there's always one clear, current thing to look at — not a wall of old links to sort through. Once a new signal goes live, the old one moves to the members archive instead of disappearing for good.</div>
+      </details>
+
+      <details class="faq-item">
+        <summary data-i18n="faq_q2">What happens to past signals?</summary>
+        <div class="faq-a" data-i18n="faq_a2">Every past signal is kept, indexed, and searchable in the members archive. If you've paid for access once, you keep it — nothing you've paid for ever gets taken away.</div>
+      </details>
+
+      <details class="faq-item">
+        <summary data-i18n="faq_q3">Do I need an account to get this week's signal?</summary>
+        <div class="faq-a" data-i18n="faq_a3">No. The current week's signal is open to everyone — just enter your email to get it sent over. An account is only needed to browse past signals in the archive.</div>
+      </details>
+
+      <details class="faq-item">
+        <summary data-i18n="faq_q4">Is this a subscription?</summary>
+        <div class="faq-a" data-i18n="faq_a4">Most signals are free, one at a time, no commitment. A separate paid membership unlocks the full archive plus any paid-only signals, and you can cancel anytime.</div>
+      </details>
+
+      <details class="faq-item">
+        <summary data-i18n="faq_q5">How do I know this isn't just more AI hype?</summary>
+        <div class="faq-a" data-i18n="faq_a5">Fair question — the space moves fast and there's a lot of noise. Every signal is a real, usable tool, template, or explainer, not a prediction or a pitch. Try this week's free one and judge for yourself.</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap about">
+    <div class="eyebrow" data-i18n="about_eyebrow">ABOUT</div>
+    <div>
+      <p data-i18n="about_p1"><strong>I send one real signal a week</strong> — cutting through the AI hype cycle with something you can actually use, not another prediction piece. Most signals are free. A few are paid, for people who want to go deeper.</p>
+      <p data-i18n="about_p2">No agency, no retainer, no pressure — just useful things, on a schedule you can rely on.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="proof reveal">
+      <span class="mono" data-i18n="proof_label">A NOTE ON PROOF</span>
+      <span data-i18n="proof_text">This is a new project — real results and quotes from people using these tools will show up here as they come in. No filler testimonials in the meantime.</span>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-row">
+    <div>
+      <div class="wordmark"><span class="dot" aria-hidden="true"></span>SIGNAL</div>
+      <div class="foot-tag" data-i18n="foot_tag">A weekly cut through the AI noise.</div>
+    </div>
+    <div class="foot-links">
+      <a href="#signup" data-i18n="foot_join">Join the list</a>
+      <a href="#">Twitter / X</a>
+      <a href="mailto:hello@example.com" data-i18n="foot_contact">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Gentle reveal-on-scroll, disabled automatically for reduced-motion users via CSS above
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold:0.12 });
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+  // ---------- i18n ----------
+  // NOTE: this covers the site chrome only. The live weekly signal's own
+  // title/description (drop_title, drop_desc) still need a manual translation
+  // pass each week — that part isn't automated.
+  const translations = {
+    en: {
+      nav_cta:"Get this week's drop", eyebrow:"WEEKLY TRANSMISSION",
+      h1_pre:"AI is moving faster than anyone can track.", h1_em:"This is your signal through the noise.",
+      hero_sub:"Every week, one real, useful thing — a tool, a template, a plain-English explainer — so you're never more than seven days behind whatever's actually changing.",
+      email_ph:"you@email.com", join_btn:"Join the signal", hero_note:"No spam. One transmission a week. Unsubscribe anytime.",
+      s1_title:"This week's signal", s1_desc:"What's cutting through the noise right now.",
+      tag_free:"Free", drop_title:"Status Board: Is Your Job Still Boarding?",
+      drop_desc:"Type your job title and get an honest, task-by-task breakdown of what AI can already do, what it can't yet, and what to do about it — no signup, about 10 seconds, in 10 languages.",
+      drop_link:"Get this drop →", drop_date:"Live this week",
+      s2_title:"Past signals", s2_desc:"Each signal broadcasts for one week, then it moves to the archive.",
+      locked_title:"6 past signals are archived",
+      locked_desc:"Members get every past signal, searchable, forever. Public visitors only catch what's live this week.",
+      locked_btn:"Sign in to view",
+      qa_title:"Q&A", qa_desc:"The questions that come up most.",
+      faq_q1:"Why does the homepage only show one signal?",
+      faq_a1:"Every week stays public for one week so there's always one clear, current thing to look at — not a wall of old links to sort through. Once a new signal goes live, the old one moves to the members archive instead of disappearing for good.",
+      faq_q2:"What happens to past signals?",
+      faq_a2:"Every past signal is kept, indexed, and searchable in the members archive. If you've paid for access once, you keep it — nothing you've paid for ever gets taken away.",
+      faq_q3:"Do I need an account to get this week's signal?",
+      faq_a3:"No. The current week's signal is open to everyone — just enter your email to get it sent over. An account is only needed to browse past signals in the archive.",
+      faq_q4:"Is this a subscription?",
+      faq_a4:"Most signals are free, one at a time, no commitment. A separate paid membership unlocks the full archive plus any paid-only signals, and you can cancel anytime.",
+      faq_q5:"How do I know this isn't just more AI hype?",
+      faq_a5:"Fair question — the space moves fast and there's a lot of noise. Every signal is a real, usable tool, template, or explainer, not a prediction or a pitch. Try this week's free one and judge for yourself.",
+      about_eyebrow:"ABOUT",
+      about_p1:"<strong>I send one real signal a week</strong> — cutting through the AI hype cycle with something you can actually use, not another prediction piece. Most signals are free. A few are paid, for people who want to go deeper.",
+      about_p2:"No agency, no retainer, no pressure — just useful things, on a schedule you can rely on.",
+      proof_label:"A NOTE ON PROOF",
+      proof_text:"This is a new project — real results and quotes from people using these tools will show up here as they come in. No filler testimonials in the meantime.",
+      foot_tag:"A weekly cut through the AI noise.", foot_join:"Join the list", foot_contact:"Contact"
+    },
+    es: {
+      nav_cta:"Recibir la entrega de esta semana", eyebrow:"TRANSMISIÓN SEMANAL",
+      h1_pre:"La IA avanza más rápido de lo que nadie puede seguir.", h1_em:"Esta es tu señal entre el ruido.",
+      hero_sub:"Cada semana, una cosa real y útil — una herramienta, una plantilla, una explicación clara — para que nunca estés a más de siete días de lo que realmente está cambiando.",
+      email_ph:"tucorreo@email.com", join_btn:"Unirme a la señal", hero_note:"Sin spam. Una transmisión por semana. Cancela cuando quieras.",
+      s1_title:"La señal de esta semana", s1_desc:"Lo que está destacando entre el ruido ahora mismo.",
+      tag_free:"Gratis", drop_title:"Status Board: ¿tu trabajo sigue embarcando?",
+      drop_desc:"Escribe tu puesto y obtén un análisis honesto, tarea por tarea, de lo que la IA ya puede hacer, lo que aún no puede y qué hacer al respecto — sin registro, en unos 10 segundos, en 10 idiomas.",
+      drop_link:"Obtener esta entrega →", drop_date:"Activa esta semana",
+      s2_title:"Señales anteriores", s2_desc:"Cada señal está disponible durante una semana y luego pasa al archivo.",
+      locked_title:"6 señales anteriores archivadas",
+      locked_desc:"Los miembros tienen acceso a todas las señales anteriores, buscables, para siempre. Los visitantes públicos solo ven lo que está activo esta semana.",
+      locked_btn:"Iniciar sesión para ver",
+      qa_title:"Preguntas frecuentes", qa_desc:"Las preguntas más comunes.",
+      faq_q1:"¿Por qué la página principal solo muestra una señal?",
+      faq_a1:"Cada señal permanece pública durante una semana para que siempre haya algo claro y actual — no un montón de enlaces antiguos. Cuando sale una nueva señal, la anterior pasa al archivo de miembros en lugar de desaparecer para siempre.",
+      faq_q2:"¿Qué pasa con las señales anteriores?",
+      faq_a2:"Cada señal anterior se guarda, se indexa y se puede buscar en el archivo de miembros. Si ya pagaste por el acceso, lo conservas — nada de lo que pagaste se te quita.",
+      faq_q3:"¿Necesito una cuenta para recibir la señal de esta semana?",
+      faq_a3:"No. La señal de la semana actual es gratuita para todos — solo ingresa tu correo para recibirla. Solo necesitas una cuenta para explorar el archivo de señales anteriores.",
+      faq_q4:"¿Esto es una suscripción?",
+      faq_a4:"La mayoría de las señales son gratuitas, una a la vez, sin compromiso. Una membresía paga aparte desbloquea el archivo completo y cualquier señal exclusiva, y puedes cancelar cuando quieras.",
+      faq_q5:"¿Cómo sé que esto no es solo más ruido sobre la IA?",
+      faq_a5:"Buena pregunta — el sector avanza rápido y hay mucho ruido. Cada señal es una herramienta, plantilla o explicación real y útil, no una predicción ni una venta. Prueba la gratuita de esta semana y decide por ti mismo.",
+      about_eyebrow:"ACERCA DE",
+      about_p1:"<strong>Envío una señal real cada semana</strong> — para atravesar el ciclo de exageración de la IA con algo que realmente puedas usar, no otra predicción más. La mayoría de las señales son gratuitas. Algunas son de pago, para quienes quieren profundizar.",
+      about_p2:"Sin agencia, sin contrato, sin presión — solo cosas útiles, con una frecuencia en la que puedes confiar.",
+      proof_label:"UNA NOTA SOBRE LA CREDIBILIDAD",
+      proof_text:"Este es un proyecto nuevo — los resultados y testimonios reales de quienes usan estas herramientas aparecerán aquí a medida que lleguen. Sin testimonios falsos mientras tanto.",
+      foot_tag:"Un corte semanal contra el ruido de la IA.", foot_join:"Unirme a la lista", foot_contact:"Contacto"
+    },
+    pt: {
+      nav_cta:"Receber o lançamento desta semana", eyebrow:"TRANSMISSÃO SEMANAL",
+      h1_pre:"A IA está avançando mais rápido do que qualquer pessoa consegue acompanhar.", h1_em:"Este é o seu sinal em meio ao ruído.",
+      hero_sub:"Toda semana, uma coisa real e útil — uma ferramenta, um modelo, uma explicação simples — para você nunca ficar mais de sete dias atrás do que realmente está mudando.",
+      email_ph:"seuemail@email.com", join_btn:"Entrar no sinal", hero_note:"Sem spam. Uma transmissão por semana. Cancele quando quiser.",
+      s1_title:"O sinal desta semana", s1_desc:"O que está se destacando em meio ao ruído agora.",
+      tag_free:"Grátis", drop_title:"Status Board: seu emprego ainda está embarcando?",
+      drop_desc:"Digite seu cargo e receba uma análise honesta, tarefa por tarefa, do que a IA já consegue fazer, do que ainda não consegue e do que fazer a respeito — sem cadastro, em cerca de 10 segundos, em 10 idiomas.",
+      drop_link:"Obter este lançamento →", drop_date:"No ar esta semana",
+      s2_title:"Sinais anteriores", s2_desc:"Cada sinal fica disponível por uma semana e depois vai para o arquivo.",
+      locked_title:"6 sinais anteriores arquivados",
+      locked_desc:"Membros têm acesso a todos os sinais anteriores, pesquisáveis, para sempre. Visitantes públicos só veem o que está no ar esta semana.",
+      locked_btn:"Entrar para ver",
+      qa_title:"Perguntas frequentes", qa_desc:"As perguntas mais comuns.",
+      faq_q1:"Por que a página inicial mostra apenas um sinal?",
+      faq_a1:"Cada sinal fica público por uma semana para que sempre haja algo claro e atual — não uma pilha de links antigos. Quando um novo sinal entra no ar, o anterior vai para o arquivo de membros em vez de desaparecer de vez.",
+      faq_q2:"O que acontece com os sinais anteriores?",
+      faq_a2:"Todo sinal anterior é guardado, indexado e pesquisável no arquivo de membros. Se você já pagou pelo acesso, ele continua seu — nada que você pagou é retirado.",
+      faq_q3:"Preciso de uma conta para receber o sinal desta semana?",
+      faq_a3:"Não. O sinal da semana atual é aberto a todos — basta informar seu e-mail para recebê-lo. Uma conta só é necessária para navegar pelo arquivo de sinais anteriores.",
+      faq_q4:"Isso é uma assinatura?",
+      faq_a4:"A maioria dos sinais é gratuita, um de cada vez, sem compromisso. Uma associação paga separada libera o arquivo completo e quaisquer sinais exclusivos, e você pode cancelar quando quiser.",
+      faq_q5:"Como sei que isso não é só mais hype de IA?",
+      faq_a5:"Pergunta justa — a área muda rápido e tem muito ruído. Cada sinal é uma ferramenta, modelo ou explicação real e utilizável, não uma previsão ou um discurso de vendas. Experimente o gratuito desta semana e julgue por si mesmo.",
+      about_eyebrow:"SOBRE",
+      about_p1:"<strong>Envio um sinal real por semana</strong> — cortando o ciclo de hype da IA com algo que você realmente pode usar, não mais uma previsão. A maioria dos sinais é gratuita. Alguns são pagos, para quem quer se aprofundar.",
+      about_p2:"Sem agência, sem contrato fixo, sem pressão — só coisas úteis, em uma frequência confiável.",
+      proof_label:"UMA NOTA SOBRE PROVAS",
+      proof_text:"Este é um projeto novo — resultados reais e depoimentos de quem usa essas ferramentas vão aparecer aqui conforme chegam. Nenhum depoimento falso enquanto isso.",
+      foot_tag:"Um corte semanal contra o ruído da IA.", foot_join:"Entrar na lista", foot_contact:"Contato"
+    },
+    fr: {
+      nav_cta:"Recevoir la sortie de la semaine", eyebrow:"TRANSMISSION HEBDOMADAIRE",
+      h1_pre:"L'IA évolue plus vite que quiconque ne peut suivre.", h1_em:"Voici votre signal au milieu du bruit.",
+      hero_sub:"Chaque semaine, une chose réelle et utile — un outil, un modèle, une explication claire — pour ne jamais avoir plus de sept jours de retard sur ce qui change vraiment.",
+      email_ph:"vous@email.com", join_btn:"Rejoindre le signal", hero_note:"Aucun spam. Une transmission par semaine. Désabonnement à tout moment.",
+      s1_title:"Le signal de la semaine", s1_desc:"Ce qui se démarque du bruit en ce moment.",
+      tag_free:"Gratuit", drop_title:"Status Board : votre emploi est-il encore à l'embarquement ?",
+      drop_desc:"Indiquez votre intitulé de poste et obtenez une analyse honnête, tâche par tâche, de ce que l'IA sait déjà faire, de ce qu'elle ne sait pas encore faire, et de ce qu'il faut en penser — sans inscription, en environ 10 secondes, en 10 langues.",
+      drop_link:"Obtenir cette sortie →", drop_date:"En ligne cette semaine",
+      s2_title:"Signaux précédents", s2_desc:"Chaque signal est diffusé pendant une semaine, puis rejoint les archives.",
+      locked_title:"6 signaux précédents archivés",
+      locked_desc:"Les membres ont accès à tous les signaux précédents, consultables, pour toujours. Les visiteurs publics ne voient que ce qui est en ligne cette semaine.",
+      locked_btn:"Se connecter pour voir",
+      qa_title:"Questions fréquentes", qa_desc:"Les questions les plus posées.",
+      faq_q1:"Pourquoi la page d'accueil n'affiche qu'un seul signal ?",
+      faq_a1:"Chaque signal reste public pendant une semaine afin qu'il y ait toujours une chose claire et actuelle à voir — pas une pile d'anciens liens. Dès qu'un nouveau signal est diffusé, l'ancien rejoint les archives des membres au lieu de disparaître définitivement.",
+      faq_q2:"Qu'advient-il des signaux précédents ?",
+      faq_a2:"Chaque signal précédent est conservé, indexé et consultable dans les archives des membres. Si vous avez déjà payé pour l'accès, vous le gardez — rien de ce que vous avez payé ne vous est retiré.",
+      faq_q3:"Ai-je besoin d'un compte pour recevoir le signal de la semaine ?",
+      faq_a3:"Non. Le signal de la semaine en cours est ouvert à tous — indiquez simplement votre e-mail pour le recevoir. Un compte n'est nécessaire que pour parcourir les archives des signaux précédents.",
+      faq_q4:"Est-ce un abonnement ?",
+      faq_a4:"La plupart des signaux sont gratuits, un à la fois, sans engagement. Un abonnement payant distinct débloque les archives complètes ainsi que tout signal payant, et vous pouvez annuler à tout moment.",
+      faq_q5:"Comment savoir si ce n'est pas juste un effet de mode de l'IA ?",
+      faq_a5:"Bonne question — le secteur évolue vite et il y a beaucoup de bruit. Chaque signal est un outil, un modèle ou une explication réel et utilisable, pas une prédiction ni un argumentaire. Essayez celui de cette semaine, gratuit, et jugez par vous-même.",
+      about_eyebrow:"À PROPOS",
+      about_p1:"<strong>J'envoie un vrai signal chaque semaine</strong> — pour couper à travers le battage médiatique de l'IA avec quelque chose que vous pouvez réellement utiliser, pas une prédiction de plus. La plupart des signaux sont gratuits. Quelques-uns sont payants, pour ceux qui veulent aller plus loin.",
+      about_p2:"Pas d'agence, pas d'engagement, pas de pression — juste des choses utiles, à un rythme sur lequel vous pouvez compter.",
+      proof_label:"UNE NOTE SUR LES PREUVES",
+      proof_text:"Ceci est un nouveau projet — de vrais résultats et témoignages de personnes utilisant ces outils apparaîtront ici au fur et à mesure. Aucun faux témoignage en attendant.",
+      foot_tag:"Une coupure hebdomadaire dans le bruit de l'IA.", foot_join:"Rejoindre la liste", foot_contact:"Contact"
+    },
+    zh: {
+      nav_cta:"获取本周更新", eyebrow:"每周信号",
+      h1_pre:"AI 的发展速度已经超出了大多数人的追踪能力。", h1_em:"这是穿透噪音的信号。",
+      hero_sub:"每周一个真正有用的东西——一个工具、一个模板、一份通俗易懂的说明——让你始终不会落后超过七天。",
+      email_ph:"you@email.com", join_btn:"加入信号", hero_note:"绝不发送垃圾邮件。每周一次更新，随时可以取消订阅。",
+      s1_title:"本周信号", s1_desc:"此刻真正值得关注的内容。",
+      tag_free:"免费", drop_title:"Status Board：你的工作还在登机中吗？",
+      drop_desc:"输入你的职位名称，获得逐项任务的诚实分析——AI 已经能做什么、还不能做什么，以及你该怎么办。无需注册，约 10 秒即可完成，支持 10 种语言。",
+      drop_link:"获取本期内容 →", drop_date:"本周更新",
+      s2_title:"往期信号", s2_desc:"每期信号公开展示一周，之后转入存档。",
+      locked_title:"已存档 6 期往期信号",
+      locked_desc:"会员可永久查看并搜索所有往期信号，普通访客只能看到本周正在更新的内容。",
+      locked_btn:"登录查看",
+      qa_title:"常见问题", qa_desc:"大家最常问的问题。",
+      faq_q1:"为什么主页只显示一期信号？",
+      faq_a1:"每期信号只公开展示一周，这样页面上始终只有一件清晰、当下的内容，而不是一堆旧链接。新信号发布后，旧的会转入会员存档，而不是永久消失。",
+      faq_q2:"往期信号会怎么样？",
+      faq_a2:"每一期往期信号都会被保存、整理并可在会员存档中搜索。只要你曾经付费获得访问权限，就会一直保留——你付过费的内容不会被收回。",
+      faq_q3:"获取本周信号需要注册账号吗？",
+      faq_a3:"不需要。本周信号对所有人开放，只需填写邮箱即可获取。只有浏览往期信号存档时才需要账号。",
+      faq_q4:"这是订阅制吗？",
+      faq_a4:"大多数信号是免费的，逐期发布，没有任何约束。另有一个独立的付费会员，可解锁完整存档以及所有付费专属内容，随时可以取消。",
+      faq_q5:"我怎么知道这不是又一波 AI 炒作？",
+      faq_a5:"这是个合理的问题——这个领域变化很快，噪音也很多。每一期信号都是真实、可用的工具、模板或说明，不是预测，也不是推销。先试试本周的免费内容，自己判断。",
+      about_eyebrow:"关于",
+      about_p1:"<strong>我每周发布一期真实的信号</strong>——用真正能用得上的内容穿透 AI 的炒作周期，而不是又一篇预测文章。大多数信号是免费的，少数付费内容适合想深入了解的人。",
+      about_p2:"没有代理机构，没有长期合约，没有压力——只有可靠、按周更新的实用内容。",
+      proof_label:"关于可信度的说明",
+      proof_text:"这是一个新项目——真实的使用效果和用户评价会随着积累逐步展示在这里，在此之前不会放任何虚假评价。",
+      foot_tag:"每周一次，穿透 AI 噪音。", foot_join:"加入邮件列表", foot_contact:"联系方式"
+    }
+  };
+
+  const supportedLangs = Object.keys(translations);
+  const langLabels = { en:'EN', es:'ES', pt:'PT', fr:'FR', zh:'ZH' };
+
+  function applyLang(lang){
+    if(!translations[lang]) lang = 'en';
+    const dict = translations[lang];
+    document.querySelectorAll('[data-i18n]').forEach(el=>{
+      const key = el.getAttribute('data-i18n');
+      if(dict[key] !== undefined) el.innerHTML = dict[key];
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{
+      const key = el.getAttribute('data-i18n-placeholder');
+      if(dict[key] !== undefined) el.setAttribute('placeholder', dict[key]);
+    });
+    document.documentElement.lang = lang;
+    document.getElementById('langBtnLabel').textContent = langLabels[lang];
+    document.querySelectorAll('.lang-opt').forEach(btn=>{
+      btn.setAttribute('aria-current', btn.getAttribute('data-lang') === lang ? 'true' : 'false');
+    });
+    try{ localStorage.setItem('signal_lang', lang); }catch(e){}
+  }
+
+  function detectInitialLang(){
+    try{
+      const saved = localStorage.getItem('signal_lang');
+      if(saved && translations[saved]) return saved;
+    }catch(e){}
+    const browserLang = (navigator.language || 'en').slice(0,2).toLowerCase();
+    return supportedLangs.includes(browserLang) ? browserLang : 'en';
+  }
+
+  const langBtn = document.getElementById('langBtn');
+  const langMenu = document.getElementById('langMenu');
+  langBtn.addEventListener('click', ()=>{
+    const open = langMenu.classList.toggle('open');
+    langBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  document.querySelectorAll('.lang-opt').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      applyLang(btn.getAttribute('data-lang'));
+      langMenu.classList.remove('open');
+      langBtn.setAttribute('aria-expanded', 'false');
+    });
+  });
+  document.addEventListener('click', (e)=>{
+    if(!e.target.closest('.lang-switch')) langMenu.classList.remove('open');
+  });
+
+  applyLang(detectInitialLang());
+</script>
+
+</body>
+</html>

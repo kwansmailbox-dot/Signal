@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STATUS BOARD — Is Your Job Still Boarding?</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Archivo:wght@400;500;600;700;800&display=swap');
+
+  :root{
+    --bg: #0B0E14;
+    --panel: #12161F;
+    --panel-2: #171C27;
+    --amber: #FFB300;
+    --offwhite: #E8E6DE;
+    --dim: #6B7180;
+    --safe: #3DDC84;
+    --hybrid: #FFB300;
+    --risk: #FF5A5A;
+    --rule: #232838;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--offwhite);
+    font-family: 'Archivo', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 16px 80px;
+  }
+
+  .wrap {
+    width: 100%;
+    max-width: 620px;
+  }
+
+  /* ---- Header: airport board strip ---- */
+  .top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    color: var(--amber);
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 8px; height: 8px;
+    background: var(--amber);
+    display: inline-block;
+    animation: blink 1.4s steps(1) infinite;
+    flex-shrink: 0;
+  }
+  @keyframes blink { 50% { opacity: 0.15; } }
+
+  .lang-select-wrap {
+    position: relative;
+    flex-shrink: 0;
+  }
+  .lang-select-wrap::after {
+    content: "▾";
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--dim);
+    font-size: 10px;
+    pointer-events: none;
+  }
+  #langSelect {
+    appearance: none;
+    -webkit-appearance: none;
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    color: var(--offwhite);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 7px 26px 7px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  #langSelect:focus, #langSelect:hover { border-color: var(--amber); }
+  #langSelect option { background: var(--panel); color: var(--offwhite); }
+
+  html[dir="rtl"] .lang-select-wrap::after { right: auto; left: 10px; }
+  html[dir="rtl"] #langSelect { padding: 7px 10px 7px 26px; }
+  html[dir="rtl"] .board-top,
+  html[dir="rtl"] .task-row,
+  html[dir="rtl"] .input-row,
+  html[dir="rtl"] .actions,
+  html[dir="rtl"] .top-row { direction: rtl; }
+
+  h1 {
+    font-family: 'Archivo', sans-serif;
+    font-weight: 800;
+    font-size: clamp(32px, 7vw, 46px);
+    line-height: 1.04;
+    letter-spacing: -0.02em;
+    margin: 0 0 10px;
+  }
+  h1 span { color: var(--amber); }
+
+  .sub {
+    color: var(--dim);
+    font-size: 15px;
+    line-height: 1.5;
+    margin-bottom: 32px;
+    max-width: 46ch;
+  }
+
+  /* ---- Input panel ---- */
+  .board-panel {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 22px;
+    margin-bottom: 18px;
+  }
+
+  .field-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  input[type="text"] {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    color: var(--offwhite);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 16px;
+    padding: 14px 14px;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  input[type="text"]:focus { border-color: var(--amber); }
+  input[type="text"]::placeholder { color: #454B5B; }
+
+  button.go {
+    background: var(--amber);
+    color: #14161C;
+    border: none;
+    border-radius: 3px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0 22px;
+    cursor: pointer;
+    transition: transform 0.1s ease, background 0.15s ease;
+  }
+  button.go:hover { background: #FFC845; }
+  button.go:active { transform: scale(0.97); }
+  button.go:disabled { opacity: 0.5; cursor: default; }
+
+  .hint {
+    font-size: 12.5px;
+    color: var(--dim);
+    margin-top: 10px;
+  }
+
+  /* ---- Result: departure board ---- */
+  #result { display: none; }
+
+  .board {
+    background: linear-gradient(180deg, #10131B, #0D1017);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+
+  .board-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .board-top .role {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--dim);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .board-top .role b { color: var(--offwhite); font-weight: 600; }
+
+  .status-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    padding: 4px 9px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+
+  .score-block {
+    padding: 30px 20px 22px;
+    text-align: center;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .flip-score {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 700;
+    font-size: 92px;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    display: inline-block;
+  }
+  .flip-score .pct { font-size: 38px; vertical-align: 22px; margin-left: 2px; color: var(--dim); }
+
+  .verdict {
+    font-family: 'Archivo', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    letter-spacing: -0.01em;
+    margin-top: 10px;
+  }
+
+  .verdict-note {
+    color: var(--dim);
+    font-size: 14px;
+    margin-top: 8px;
+    max-width: 42ch;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.5;
+  }
+
+  .rows { padding: 6px 0; }
+
+  .task-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 13px 20px;
+    border-bottom: 1px solid var(--rule);
+    opacity: 0;
+    transform: translateY(6px);
+    animation: rowIn 0.35s ease forwards;
+  }
+  .task-row:last-child { border-bottom: none; }
+
+  .task-name {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13.5px;
+    color: var(--offwhite);
+  }
+  .task-note {
+    font-size: 12px;
+    color: var(--dim);
+    margin-top: 2px;
+    font-family: 'Archivo', sans-serif;
+  }
+
+  @keyframes rowIn { to { opacity: 1; transform: translateY(0); } }
+
+  .tag-SAFE { background: rgba(61,220,132,0.14); color: var(--safe); }
+  .tag-HYBRID { background: rgba(255,179,0,0.14); color: var(--hybrid); }
+  .tag-AUTOMATABLE { background: rgba(255,90,90,0.14); color: var(--risk); }
+
+  .next-step {
+    padding: 20px;
+    background: var(--panel-2);
+  }
+  .next-step .label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 8px;
+  }
+  .next-step p { margin: 0; font-size: 14.5px; line-height: 1.55; color: var(--offwhite); }
+
+  .actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .actions button {
+    flex: 1;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 12px;
+    border-radius: 3px;
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--offwhite);
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .actions button:hover { border-color: var(--amber); background: rgba(255,179,0,0.06); }
+
+  /* ---- Loading state ---- */
+  #loading { display: none; padding: 40px 0; text-align: center; }
+  .loading-flip {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.14em;
+    color: var(--amber);
+    text-transform: uppercase;
+  }
+  .loading-flip::after {
+    content: "";
+    display: inline-block;
+    width: 1px;
+    animation: dots 1.2s steps(4) infinite;
+  }
+  @keyframes dots {
+    0% { content: ""; }
+  }
+  .dotpulse span { animation: pulse 1.4s infinite ease-in-out; display:inline-block; }
+  .dotpulse span:nth-child(2) { animation-delay: 0.2s; }
+  .dotpulse span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes pulse { 0%,80%,100% { opacity: 0.2; } 40% { opacity: 1; } }
+
+  #errorbox {
+    display: none;
+    margin-top: 14px;
+    padding: 14px;
+    border: 1px solid var(--risk);
+    border-radius: 3px;
+    color: var(--risk);
+    font-size: 13.5px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  footer {
+    margin-top: 40px;
+    text-align: center;
+    color: #3A3F4C;
+    font-size: 11.5px;
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.05em;
+  }
+
+  @media (max-width: 480px) {
+    .flip-score { font-size: 72px; }
+    .input-row { flex-direction: column; }
+    button.go { padding: 14px; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top-row">
+      <div class="eyebrow" id="eyebrowText">Live Status Board</div>
+      <div class="lang-select-wrap">
+        <select id="langSelect" aria-label="Language"></select>
+      </div>
+    </div>
+    <h1 id="titleText">Is your job<br>still <span>boarding?</span></h1>
+    <p class="sub" id="subText">Type your job title. Get an honest, task-by-task read on what AI can already do, what it can't — and what to do about it. No signup, no email.</p>
+
+    <div class="board-panel">
+      <label class="field-label" id="fieldLabelText">Your job title</label>
+      <div class="input-row">
+        <input type="text" id="jobInput" maxlength="60" />
+        <button class="go" id="goBtn">Check status</button>
+      </div>
+      <div class="hint" id="hintText">Press enter or tap check. Takes about 10 seconds.</div>
+      <div id="errorbox"></div>
+    </div>
+
+    <div id="loading">
+      <div class="loading-flip" id="loadingText">Reading the board<span class="dotpulse"><span>.</span><span>.</span><span>.</span></span></div>
+    </div>
+
+    <div id="result"></div>
+
+    <footer id="footerText">STATUS BOARD — not career advice, just an honest read. Built with AI, checked by nobody but you.</footer>
+  </div>
+
+<script>
+const goBtn = document.getElementById('goBtn');
+const jobInput = document.getElementById('jobInput');
+const loading = document.getElementById('loading');
+const resultEl = document.getElementById('result');
+const errorbox = document.getElementById('errorbox');
+const hintText = document.getElementById('hintText');
+const langSelect = document.getElementById('langSelect');
+
+// ---- Translations ----
+const LANGS = {
+  en: { name: 'English', native: 'English', dir: 'ltr',
+    eyebrow: 'Live Status Board', title1: 'Is your job', title2: 'still boarding?',
+    sub: "Type your job title. Get an honest, task-by-task read on what AI can already do, what it can't — and what to do about it. No signup, no email.",
+    fieldLabel: 'Your job title', placeholder: 'e.g. Paralegal, Barista, Graphic Designer...',
+    go: 'Check status', hint: 'Press enter or tap check. Takes about 10 seconds.', hintCalc: 'Calculating...',
+    loading: 'Reading the board', errEmpty: 'Type a job title first.', errFail: 'Board glitched. Try again in a moment.',
+    role: 'Role', gate: 'Gate change — what to do', share: 'Share my status', again: 'Check another job',
+    copied: 'Copied!', footer: 'STATUS BOARD — not career advice, just an honest read. Built with AI, checked by nobody but you.',
+    shareText: (job, score, verdict) => `My job (${job}) just got a ${score}% automation score: "${verdict}" — check yours on the Status Board.` },
+  es: { name: 'Spanish', native: 'Español', dir: 'ltr',
+    eyebrow: 'Tablero en vivo', title1: 'Tu trabajo,', title2: '¿sigue embarcando?',
+    sub: 'Escribe tu puesto de trabajo. Obtén una lectura honesta, tarea por tarea, de lo que la IA ya puede hacer, lo que no — y qué hacer al respecto. Sin registro, sin correo.',
+    fieldLabel: 'Tu puesto de trabajo', placeholder: 'ej. Abogado, Barista, Diseñador gráfico...',
+    go: 'Ver estado', hint: 'Pulsa enter o toca el botón. Tarda unos 10 segundos.', hintCalc: 'Calculando...',
+    loading: 'Leyendo el tablero', errEmpty: 'Escribe primero un puesto de trabajo.', errFail: 'El tablero falló. Inténtalo de nuevo.',
+    role: 'Puesto', gate: 'Cambio de puerta — qué hacer', share: 'Compartir mi estado', again: 'Revisar otro trabajo',
+    copied: '¡Copiado!', footer: 'STATUS BOARD — no es asesoría profesional, solo una lectura honesta. Hecho con IA, revisado por nadie más que tú.',
+    shareText: (job, score, verdict) => `Mi trabajo (${job}) obtuvo un ${score}% de riesgo de automatización: "${verdict}" — revisa el tuyo en Status Board.` },
+  pt: { name: 'Portuguese', native: 'Português', dir: 'ltr',
+    eyebrow: 'Painel ao vivo', title1: 'Seu trabalho', title2: 'ainda está embarcando?',
+    sub: 'Digite seu cargo. Receba uma leitura honesta, tarefa por tarefa, do que a IA já consegue fazer, o que não consegue — e o que fazer a respeito. Sem cadastro, sem e-mail.',
+    fieldLabel: 'Seu cargo', placeholder: 'ex. Advogado, Barista, Designer gráfico...',
+    go: 'Ver status', hint: 'Aperte enter ou toque no botão. Leva cerca de 10 segundos.', hintCalc: 'Calculando...',
+    loading: 'Lendo o painel', errEmpty: 'Digite um cargo primeiro.', errFail: 'O painel travou. Tente novamente.',
+    role: 'Cargo', gate: 'Mudança de portão — o que fazer', share: 'Compartilhar meu status', again: 'Verificar outro cargo',
+    copied: 'Copiado!', footer: 'STATUS BOARD — não é aconselhamento profissional, apenas uma leitura honesta. Feito com IA, revisado só por você.',
+    shareText: (job, score, verdict) => `Meu trabalho (${job}) teve ${score}% de risco de automação: "${verdict}" — confira o seu no Status Board.` },
+  fr: { name: 'French', native: 'Français', dir: 'ltr',
+    eyebrow: 'Tableau en direct', title1: 'Votre métier', title2: 'embarque-t-il encore ?',
+    sub: "Entrez votre métier. Obtenez un avis honnête, tâche par tâche, sur ce que l'IA peut déjà faire, ce qu'elle ne peut pas — et quoi faire. Sans inscription, sans email.",
+    fieldLabel: 'Votre métier', placeholder: 'ex. Avocat, Barista, Designer graphique...',
+    go: 'Vérifier le statut', hint: 'Appuyez sur entrée ou touchez le bouton. Environ 10 secondes.', hintCalc: 'Calcul en cours...',
+    loading: 'Lecture du tableau', errEmpty: "Entrez d'abord un métier.", errFail: 'Le tableau a buggé. Réessayez.',
+    role: 'Métier', gate: 'Changement de porte — que faire', share: 'Partager mon statut', again: 'Vérifier un autre métier',
+    copied: 'Copié !', footer: "STATUS BOARD — ce n'est pas un conseil de carrière, juste un avis honnête. Fait avec l'IA, vérifié par personne d'autre que vous.",
+    shareText: (job, score, verdict) => `Mon métier (${job}) a obtenu ${score}% de risque d'automatisation : "${verdict}" — vérifiez le vôtre sur Status Board.` },
+  de: { name: 'German', native: 'Deutsch', dir: 'ltr',
+    eyebrow: 'Live-Statustafel', title1: 'Ist dein Job', title2: 'noch mit an Bord?',
+    sub: 'Gib deine Berufsbezeichnung ein. Erhalte eine ehrliche Aufgabe-für-Aufgabe-Einschätzung, was KI schon kann, was nicht — und was du tun kannst. Keine Anmeldung, keine E-Mail.',
+    fieldLabel: 'Deine Berufsbezeichnung', placeholder: 'z.B. Anwalt, Barista, Grafikdesigner...',
+    go: 'Status prüfen', hint: 'Enter drücken oder Button tippen. Dauert etwa 10 Sekunden.', hintCalc: 'Wird berechnet...',
+    loading: 'Tafel wird gelesen', errEmpty: 'Erst eine Berufsbezeichnung eingeben.', errFail: 'Tafel gestört. Bitte erneut versuchen.',
+    role: 'Beruf', gate: 'Gate-Wechsel — was tun', share: 'Status teilen', again: 'Anderen Job prüfen',
+    copied: 'Kopiert!', footer: 'STATUS BOARD — keine Karriereberatung, nur eine ehrliche Einschätzung. Mit KI erstellt, von niemandem außer dir geprüft.',
+    shareText: (job, score, verdict) => `Mein Job (${job}) bekam ${score}% Automatisierungsrisiko: "${verdict}" — prüfe deinen auf Status Board.` },
+  it: { name: 'Italian', native: 'Italiano', dir: 'ltr',
+    eyebrow: 'Tabellone in diretta', title1: 'Il tuo lavoro', title2: 'sta ancora imbarcando?',
+    sub: "Scrivi la tua professione. Ricevi una lettura onesta, compito per compito, di cosa l'IA sa già fare, cosa no — e cosa fare al riguardo. Senza registrazione, senza email.",
+    fieldLabel: 'La tua professione', placeholder: 'es. Avvocato, Barista, Grafico...',
+    go: 'Controlla stato', hint: 'Premi invio o tocca il pulsante. Circa 10 secondi.', hintCalc: 'Calcolo in corso...',
+    loading: 'Lettura del tabellone', errEmpty: 'Scrivi prima una professione.', errFail: 'Il tabellone si è bloccato. Riprova.',
+    role: 'Professione', gate: 'Cambio gate — cosa fare', share: 'Condividi il mio stato', again: 'Controlla un altro lavoro',
+    copied: 'Copiato!', footer: 'STATUS BOARD — non è consulenza di carriera, solo una lettura onesta. Fatto con IA, controllato solo da te.',
+    shareText: (job, score, verdict) => `Il mio lavoro (${job}) ha ottenuto un rischio di automazione del ${score}%: "${verdict}" — controlla il tuo su Status Board.` },
+  hi: { name: 'Hindi', native: 'हिन्दी', dir: 'ltr',
+    eyebrow: 'लाइव स्टेटस बोर्ड', title1: 'क्या आपकी नौकरी', title2: 'अभी भी बोर्डिंग में है?',
+    sub: 'अपनी जॉब टाइटल लिखें। जानें कि AI क्या पहले से कर सकता है, क्या नहीं — और आपको क्या करना चाहिए। कोई साइनअप नहीं, कोई ईमेल नहीं।',
+    fieldLabel: 'आपकी जॉब टाइटल', placeholder: 'जैसे वकील, बरिस्ता, ग्राफिक डिज़ाइनर...',
+    go: 'स्टेटस देखें', hint: 'एंटर दबाएं या बटन टैप करें। लगभग 10 सेकंड लगेंगे।', hintCalc: 'गणना हो रही है...',
+    loading: 'बोर्ड पढ़ा जा रहा है', errEmpty: 'पहले जॉब टाइटल लिखें।', errFail: 'बोर्ड में गड़बड़ी हुई। दोबारा कोशिश करें।',
+    role: 'पद', gate: 'गेट बदला — क्या करें', share: 'मेरा स्टेटस शेयर करें', again: 'दूसरी नौकरी जांचें',
+    copied: 'कॉपी हो गया!', footer: 'STATUS BOARD — यह करियर सलाह नहीं, बस एक ईमानदार राय है। AI से बना, सिर्फ आपके द्वारा जांचा गया।',
+    shareText: (job, score, verdict) => `मेरी नौकरी (${job}) को ${score}% ऑटोमेशन स्कोर मिला: "${verdict}" — Status Board पर अपना स्कोर जांचें।` },
+  ar: { name: 'Arabic', native: 'العربية', dir: 'rtl',
+    eyebrow: 'لوحة الحالة المباشرة', title1: 'هل وظيفتك', title2: 'ما زالت تصعد إلى الطائرة؟',
+    sub: 'اكتب مسمى وظيفتك. احصل على تقييم صادق، مهمة تلو الأخرى، لما يستطيع الذكاء الاصطناعي فعله بالفعل، وما لا يستطيع — وماذا تفعل حيال ذلك. بدون تسجيل، بدون بريد إلكتروني.',
+    fieldLabel: 'مسمى وظيفتك', placeholder: 'مثال: محامٍ، باريستا، مصمم جرافيك...',
+    go: 'تحقق من الحالة', hint: 'اضغط إنتر أو انقر الزر. يستغرق حوالي 10 ثوانٍ.', hintCalc: 'جارٍ الحساب...',
+    loading: 'جارٍ قراءة اللوحة', errEmpty: 'اكتب مسمى وظيفة أولاً.', errFail: 'حدث خلل في اللوحة. حاول مجددًا.',
+    role: 'الوظيفة', gate: 'تغيير البوابة — ماذا تفعل', share: 'شارك حالتي', again: 'تحقق من وظيفة أخرى',
+    copied: 'تم النسخ!', footer: 'STATUS BOARD — ليست استشارة مهنية، فقط تقييم صادق. صُنع بالذكاء الاصطناعي، ولم يراجعه أحد سواك.',
+    shareText: (job, score, verdict) => `وظيفتي (${job}) بلغت نسبة خطر الأتمتة فيها ${score}%: "${verdict}" — تحقق من وظيفتك على Status Board.` },
+  zh: { name: 'Chinese', native: '中文', dir: 'ltr',
+    eyebrow: '实时状态看板', title1: '你的工作', title2: '还在登机中？',
+    sub: '输入你的职位名称，获得逐项任务的诚实分析：AI 已经能做什么、还不能做什么，以及你该怎么办。无需注册，无需邮箱。',
+    fieldLabel: '你的职位名称', placeholder: '例如：律师、咖啡师、平面设计师...',
+    go: '查看状态', hint: '按回车或点击按钮，大约需要 10 秒。', hintCalc: '计算中...',
+    loading: '正在读取看板', errEmpty: '请先输入职位名称。', errFail: '看板出错了，请重试。',
+    role: '职位', gate: '登机口变更 — 该怎么办', share: '分享我的状态', again: '查看其他职位',
+    copied: '已复制！', footer: 'STATUS BOARD — 不是职业建议，只是一次诚实的分析。由 AI 生成，除了你自己没人核实过。',
+    shareText: (job, score, verdict) => `我的工作（${job}）自动化风险为 ${score}%："${verdict}" — 快去 Status Board 查查你的。` },
+  ja: { name: 'Japanese', native: '日本語', dir: 'ltr',
+    eyebrow: 'ライブ・ステータスボード', title1: 'あなたの仕事は', title2: 'まだ搭乗中？',
+    sub: '職種を入力してください。AIがすでにできること、まだできないこと、そして何をすべきかを、タスクごとに正直に診断します。登録不要、メール不要。',
+    fieldLabel: 'あなたの職種', placeholder: '例：弁護士、バリスタ、グラフィックデザイナー...',
+    go: 'ステータスを確認', hint: 'Enterを押すかボタンをタップ。約10秒かかります。', hintCalc: '計算中...',
+    loading: 'ボードを読み込み中', errEmpty: 'まず職種を入力してください。', errFail: 'ボードに不具合が発生しました。もう一度お試しください。',
+    role: '職種', gate: 'ゲート変更 — やるべきこと', share: 'ステータスをシェア', again: '別の職種を確認',
+    copied: 'コピーしました！', footer: 'STATUS BOARD — キャリア相談ではなく、あくまで正直な診断です。AIが作成し、あなた自身が確認するだけのものです。',
+    shareText: (job, score, verdict) => `私の仕事（${job}）の自動化リスクは${score}%でした：「${verdict}」— Status Boardであなたの仕事もチェックしてみて。` },
+  ko: { name: 'Korean', native: '한국어', dir: 'ltr',
+    eyebrow: '실시간 상태 보드', title1: '당신의 직업은', title2: '아직 탑승 중인가요?',
+    sub: '직업명을 입력하세요. AI가 이미 할 수 있는 것, 아직 못하는 것, 그리고 무엇을 해야 하는지 작업별로 솔직하게 알려드립니다. 가입도, 이메일도 필요 없습니다.',
+    fieldLabel: '당신의 직업명', placeholder: '예: 변호사, 바리스타, 그래픽 디자이너...',
+    go: '상태 확인', hint: '엔터를 누르거나 버튼을 탭하세요. 약 10초 걸립니다.', hintCalc: '계산 중...',
+    loading: '보드 읽는 중', errEmpty: '먼저 직업명을 입력하세요.', errFail: '보드에 오류가 발생했습니다. 다시 시도하세요.',
+    role: '직업', gate: '게이트 변경 — 해야 할 일', share: '내 상태 공유하기', again: '다른 직업 확인',
+    copied: '복사됨!', footer: 'STATUS BOARD — 커리어 조언이 아니라 솔직한 진단일 뿐입니다. AI로 만들었고, 당신만 확인했습니다.',
+    shareText: (job, score, verdict) => `내 직업(${job})의 자동화 위험도는 ${score}%: "${verdict}" — Status Board에서 당신의 직업도 확인해보세요.` },
+  ru: { name: 'Russian', native: 'Русский', dir: 'ltr',
+    eyebrow: 'Табло в реальном времени', title1: 'Ваша работа', title2: 'всё ещё на посадке?',
+    sub: 'Введите название вашей профессии. Получите честную оценку по каждой задаче: что ИИ уже умеет, чего не умеет — и что с этим делать. Без регистрации, без почты.',
+    fieldLabel: 'Название вашей профессии', placeholder: 'напр. Юрист, Бариста, Графический дизайнер...',
+    go: 'Проверить статус', hint: 'Нажмите Enter или кнопку. Занимает около 10 секунд.', hintCalc: 'Вычисляем...',
+    loading: 'Читаем табло', errEmpty: 'Сначала введите профессию.', errFail: 'Табло дало сбой. Попробуйте ещё раз.',
+    role: 'Профессия', gate: 'Смена выхода — что делать', share: 'Поделиться статусом', again: 'Проверить другую профессию',
+    copied: 'Скопировано!', footer: 'STATUS BOARD — это не карьерная консультация, а просто честная оценка. Сделано с ИИ, проверено только вами.',
+    shareText: (job, score, verdict) => `Моя профессия (${job}) получила ${score}% риска автоматизации: «${verdict}» — проверьте свою на Status Board.` },
+};
+
+let currentLang = 'en';
+
+function detectLang() {
+  const nav = (navigator.language || 'en').toLowerCase();
+  const short = nav.split('-')[0];
+  return LANGS[short] ? short : 'en';
+}
+
+function populateLangSelect() {
+  langSelect.innerHTML = Object.keys(LANGS).map(code =>
+    `<option value="${code}">${LANGS[code].native}</option>`
+  ).join('');
+}
+
+function applyLang(code) {
+  currentLang = LANGS[code] ? code : 'en';
+  const t = LANGS[currentLang];
+  document.documentElement.lang = currentLang;
+  document.documentElement.dir = t.dir;
+  langSelect.value = currentLang;
+
+  document.getElementById('eyebrowText').textContent = t.eyebrow;
+  document.getElementById('titleText').innerHTML = `${escapeHtml(t.title1)}<br><span>${escapeHtml(t.title2)}</span>`;
+  document.getElementById('subText').textContent = t.sub;
+  document.getElementById('fieldLabelText').textContent = t.fieldLabel;
+  jobInput.placeholder = t.placeholder;
+  goBtn.textContent = t.go;
+  hintText.textContent = t.hint;
+  document.getElementById('loadingText').firstChild.textContent = t.loading;
+  document.getElementById('footerText').textContent = t.footer;
+  errorbox.style.display = 'none';
+}
+
+populateLangSelect();
+applyLang(detectLang());
+langSelect.addEventListener('change', () => applyLang(langSelect.value));
+
+jobInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') runCheck(); });
+goBtn.addEventListener('click', runCheck);
+
+function statusFromScore(score) {
+  if (score >= 70) return { tag: 'AUTOMATABLE', color: 'var(--risk)' };
+  if (score >= 40) return { tag: 'HYBRID', color: 'var(--hybrid)' };
+  return { tag: 'SAFE', color: 'var(--safe)' };
+}
+
+async function runCheck() {
+  const t = LANGS[currentLang];
+  const job = jobInput.value.trim();
+  errorbox.style.display = 'none';
+  if (!job) {
+    errorbox.textContent = t.errEmpty;
+    errorbox.style.display = 'block';
+    return;
+  }
+
+  resultEl.style.display = 'none';
+  resultEl.innerHTML = '';
+  loading.style.display = 'block';
+  goBtn.disabled = true;
+  hintText.textContent = t.hintCalc;
+
+  try {
+    const response = await fetch('/.netlify/functions/status-check', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ job, langName: t.name, langNative: t.native })
+    });
+
+    if (!response.ok) throw new Error('Request failed');
+    const parsed = await response.json();
+
+    renderResult(job, parsed);
+  } catch (err) {
+    console.error(err);
+    errorbox.textContent = t.errFail;
+    errorbox.style.display = 'block';
+  } finally {
+    loading.style.display = 'none';
+    goBtn.disabled = false;
+    hintText.textContent = t.hint;
+  }
+}
+
+
+function renderResult(job, data) {
+  const t = LANGS[currentLang];
+  const overall = statusFromScore(data.risk_score);
+  const tasksHtml = data.tasks.map((task, i) => `
+    <div class="task-row" style="animation-delay:${i * 0.08}s">
+      <div>
+        <div class="task-name">${escapeHtml(task.name)}</div>
+        <div class="task-note">${escapeHtml(task.note)}</div>
+      </div>
+      <div class="status-tag tag-${task.status}">${task.status}</div>
+    </div>
+  `).join('');
+
+  resultEl.innerHTML = `
+    <div class="board">
+      <div class="board-top">
+        <div class="role">${escapeHtml(t.role)}: <b>${escapeHtml(job)}</b></div>
+        <div class="status-tag tag-${overall.tag}">${overall.tag}</div>
+      </div>
+      <div class="score-block">
+        <div class="flip-score">${data.risk_score}<span class="pct">%</span></div>
+        <div class="verdict">${escapeHtml(data.verdict)}</div>
+        <div class="verdict-note">${escapeHtml(data.verdict_note)}</div>
+      </div>
+      <div class="rows">${tasksHtml}</div>
+      <div class="next-step">
+        <div class="label">${escapeHtml(t.gate)}</div>
+        <p>${escapeHtml(data.next_step)}</p>
+      </div>
+    </div>
+    <div class="actions">
+      <button id="shareBtn">${escapeHtml(t.share)}</button>
+      <button id="againBtn">${escapeHtml(t.again)}</button>
+    </div>
+  `;
+  resultEl.style.display = 'block';
+
+  document.getElementById('againBtn').addEventListener('click', () => {
+    jobInput.value = '';
+    jobInput.focus();
+    resultEl.style.display = 'none';
+  });
+
+  document.getElementById('shareBtn').addEventListener('click', async () => {
+    const shareText = t.shareText(job, data.risk_score, data.verdict);
+    if (navigator.share) {
+      try { await navigator.share({ text: shareText }); } catch(e) {}
+    } else {
+      try {
+        await navigator.clipboard.writeText(shareText);
+        const btn = document.getElementById('shareBtn');
+        const original = btn.textContent;
+        btn.textContent = t.copied;
+        setTimeout(() => { btn.textContent = original; }, 1500);
+      } catch(e) {}
+    }
+  });
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+</script>
+</body>
+</html>
