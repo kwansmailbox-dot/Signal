@@ -50,7 +50,11 @@ Write every string value (verdict, verdict_note, task names, task notes, next_st
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: systemPrompt }] },
           contents: [{ parts: [{ text: `Job title: ${job}` }] }],
-          generationConfig: { maxOutputTokens: 1000, temperature: 0.7 }
+          generationConfig: {
+            maxOutputTokens: 2000,
+            temperature: 0.7,
+            thinkingConfig: { thinkingLevel: 'low' }
+          }
         })
       }
     );
