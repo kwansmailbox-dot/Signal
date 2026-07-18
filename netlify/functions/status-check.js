@@ -56,7 +56,12 @@ Write every string value (verdict, verdict_note, task names, task notes, next_st
     );
 
     if (!response.ok) {
-      return { statusCode: 502, body: JSON.stringify({ error: 'Upstream request failed' }) };
+      const errText = await response.text();
+      console.error('Gemini API error:', response.status, errText);
+      return {
+        statusCode: 502,
+        body: JSON.stringify({ error: 'Upstream request failed', detail: errText.slice(0, 300) })
+      };
     }
 
     const data = await response.json();
