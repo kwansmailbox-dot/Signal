@@ -1,5 +1,5 @@
 // Runs on Netlify's servers, never in the visitor's browser.
-// The system prompt and API key stay here — not in page source.
+// Uses Google Gemini's free API tier — no billing/tax-ID setup required.
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
@@ -23,7 +23,7 @@ exports.handler = async (event) => {
     return { statusCode: 400, body: JSON.stringify({ error: 'Job title too long' }) };
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return { statusCode: 500, body: JSON.stringify({ error: 'Server not configured — missing API key' }) };
   }
@@ -42,32 +42,32 @@ Include exactly 5 tasks that are genuinely representative of this specific job, 
 Write every string value (verdict, verdict_note, task names, task notes, next_step) in ${langName} (${langNative}). Keep the JSON keys and the "status" enum values (AUTOMATABLE, HYBRID, SAFE) in English exactly as specified — only the human-readable text should be translated. Use natural, native-sounding phrasing, not a literal translation.`;
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 1000,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: `Job title: ${job}` }]
-      })
-    });
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          contents: [{ parts: [{ text: `Job title: ${job}` }] }],
+          generationConfig: { maxOutputTokens: 1000, temperature: 0.7 }
+        })
+      }
+    );
 
     if (!response.ok) {
       return { statusCode: 502, body: JSON.stringify({ error: 'Upstream request failed' }) };
     }
 
     const data = await response.json();
-    const textBlock = (data.content || []).find(b => b.type === 'text');
-    if (!textBlock) {
+    const text = data.candidates && data.candidates[0] && data.candidates[0].content
+      ? data.candidates[0].content.parts[0].text
+      : null;
+    if (!text) {
       return { statusCode: 502, body: JSON.stringify({ error: 'No response text' }) };
     }
 
-    const clean = textBlock.text.replace(/```json|```/g, '').trim();
+    const clean = text.replace(/```json|```/g, '').trim();
     const parsed = JSON.parse(clean);
 
     return {
