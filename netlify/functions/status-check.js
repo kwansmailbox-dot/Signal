@@ -81,6 +81,7 @@ Write every string value (verdict, verdict_note, task names, task notes, next_st
       body: JSON.stringify(parsed)
     };
   } catch (err) {
-    return { statusCode: 500, body: JSON.stringify({ error: 'Server error' }) };
+    console.error('Function crash:', err.message, err.stack);
+    return { statusCode: 500, body: JSON.stringify({ error: 'Server error', detail: err.message }) };
   }
 };
